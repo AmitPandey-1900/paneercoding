@@ -1,0 +1,20 @@
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+@Component
+public class TFServiceClient {
+    private final RestTemplate restTemplate;
+
+    @Autowired
+    public TFServiceClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public String getToken() {
+        // Make API call to TF service to get JWT token
+        ResponseEntity<String> response = restTemplate.getForEntity("http://tf-service-url/token", String.class);
+        return response.getBody();
+    }
+}
