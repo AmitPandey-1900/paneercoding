@@ -1,0 +1,34 @@
+@startuml
+
+class SpringBootClass {
+    - restTemplate: RestTemplate
+    - redisTemplate: RedisTemplate
+    - tokenExpirationTime: long
+    - tokenRefreshThreshold: long
+    - token: String
+    + getToken(): String
+    + fetchTokenFromTFService(): String
+    + refreshTokenIfExpired(): void
+    + callGraphQLService(): void
+}
+
+class TFServiceClient {
+    - restTemplate: RestTemplate
+    + getToken(): String
+}
+
+class RedisCacheService {
+    - redisTemplate: RedisTemplate
+    + saveToken(token: String): void
+    + getToken(): String
+}
+
+class GraphQLServiceClient {
+    + callGraphQLService(): void
+}
+
+SpringBootClass -- TFServiceClient : uses
+SpringBootClass -- RedisCacheService : uses
+SpringBootClass -- GraphQLServiceClient : calls
+
+@enduml
