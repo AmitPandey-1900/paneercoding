@@ -1,0 +1,10 @@
+import org.springframework.stereotype.Component;
+
+@Component
+public class GraphQLServiceClient {
+    public void callGraphQLService(String token) {
+        // Make GraphQL service call using the provided token
+        // Implementation details omitted for brevity
+        System.out.println("Calling GraphQL service with token: " + token);
+    }
+}
