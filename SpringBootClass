@@ -1,0 +1,47 @@
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class SpringBootClass {
+
+    private final TFServiceClient tfServiceClient;
+    private final RedisCacheService redisCacheService;
+    private final GraphQLServiceClient graphQLServiceClient;
+
+    private String token;
+    private long tokenExpirationTime;
+    private long tokenRefreshThreshold;
+
+    @Autowired
+    public SpringBootClass(TFServiceClient tfServiceClient, RedisCacheService redisCacheService, GraphQLServiceClient graphQLServiceClient) {
+        this.tfServiceClient = tfServiceClient;
+        this.redisCacheService = redisCacheService;
+        this.graphQLServiceClient = graphQLServiceClient;
+        this.token = null;
+        this.tokenExpirationTime = 0;
+        this.tokenRefreshThreshold = 60000; // 1 minute before expiration
+    }
+
+    public String getToken() {
+        refreshTokenIfExpired();
+        return token;
+    }
+
+    private void refreshTokenIfExpired() {
+        if (token == null || System.currentTimeMillis() > tokenExpirationTime - tokenRefreshThreshold) {
+            String newToken = tfServiceClient.getToken();
+            redisCacheService.saveToken(newToken);
+            token = newToken;
+            // Assume tokenExpirationTime is received from TF service along with the token
+            // For demonstration, assuming tokenExpirationTime is set to 1 hour from current time
+            tokenExpirationTime = System.currentTimeMillis() + 3600000;
+        }
+    }
+
+    public void callGraphQLService() {
+        // Make sure to use the token retrieved from getToken() method
+        String token = getToken();
+        // Make GraphQL service call using the token
+        graphQLServiceClient.callGraphQLService(token);
+    }
+}
