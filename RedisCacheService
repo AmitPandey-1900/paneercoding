@@ -1,0 +1,23 @@
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+
+@Component
+public class RedisCacheService {
+    private final RedisTemplate<String, String> redisTemplate;
+
+    @Autowired
+    public RedisCacheService(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    public void saveToken(String token) {
+        // Save token in Redis cache
+        redisTemplate.opsForValue().set("jwt_token", token);
+    }
+
+    public String getToken() {
+        // Retrieve token from Redis cache
+        return redisTemplate.opsForValue().get("jwt_token");
+    }
+}
