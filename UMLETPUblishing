@@ -1,0 +1,40 @@
+@startuml
+
+class ActiveMQListener {
+    - messageProcessor: MessageProcessor
+    + listen(message: String): void
+}
+
+class MessageProcessor {
+    - xmlParser: XMLParser
+    - protobufProcessor: ProtobufProcessor
+    - azureUploader: AzureUploader
+    + processMessage(xmlMessage: String): void
+}
+
+class XMLParser {
+    + parse(xml: String): YourObject
+}
+
+class ProtobufProcessor {
+    + processToProtobuf(yourObject: YourObject): byte[]
+}
+
+class AzureUploader {
+    - connectionString: String
+    - containerName: String
+    + uploadToAzure(data: byte[], blobName: String): void
+}
+
+class YourObject {
+    + field1: String
+    + field2: int
+    // Add more fields as necessary
+}
+
+ActiveMQListener --> MessageProcessor : uses
+MessageProcessor --> XMLParser : uses
+MessageProcessor --> ProtobufProcessor : uses
+MessageProcessor --> AzureUploader : uses
+
+@enduml
