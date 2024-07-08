@@ -1,0 +1,17 @@
+import com.azure.storage.blob.BlobClientBuilder;
+import com.azure.storage.blob.models.BlobHttpHeaders;
+
+public class AzureUploader {
+
+    private final String connectionString = "your-connection-string";
+    private final String containerName = "your-container-name";
+
+    public void uploadToAzure(byte[] data, String blobName) {
+        BlobClientBuilder blobClientBuilder = new BlobClientBuilder()
+                .connectionString(connectionString)
+                .containerName(containerName)
+                .blobName(blobName);
+
+        blobClientBuilder.buildClient().upload(new ByteArrayInputStream(data), data.length, true);
+    }
+}
