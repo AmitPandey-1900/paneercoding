@@ -1,0 +1,18 @@
+import javax.xml.bind.JAXBException;
+
+public class MessageProcessor {
+
+    private final XMLParser xmlParser = new XMLParser();
+    private final ProtobufProcessor protobufProcessor = new ProtobufProcessor();
+    private final AzureUploader azureUploader = new AzureUploader();
+
+    public void processMessage(String xmlMessage) {
+        try {
+            YourObject yourObject = xmlParser.parse(xmlMessage);
+            byte[] protobufData = protobufProcessor.processToProtobuf(yourObject);
+            azureUploader.uploadToAzure(protobufData, "your-blob-name");
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+    }
+}
