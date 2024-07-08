@@ -1,0 +1,13 @@
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.StringReader;
+
+public class XMLParser {
+
+    public YourObject parse(String xml) throws JAXBException {
+        JAXBContext context = JAXBContext.newInstance(YourObject.class);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return (YourObject) unmarshaller.unmarshal(new StringReader(xml));
+    }
+}
