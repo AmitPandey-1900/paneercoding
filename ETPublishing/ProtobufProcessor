@@ -1,0 +1,12 @@
+import com.example.protobuf.YourMessageProto.YourMessage;
+
+public class ProtobufProcessor {
+
+    public byte[] processToProtobuf(YourObject yourObject) {
+        YourMessage message = YourMessage.newBuilder()
+                .setField1(yourObject.getField1())
+                .setField2(yourObject.getField2())
+                .build();
+        return message.toByteArray();
+    }
+}
