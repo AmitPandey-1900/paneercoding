@@ -1,17 +1,48 @@
 import com.azure.storage.blob.BlobClientBuilder;
-import com.azure.storage.blob.models.BlobHttpHeaders;
+import com.azure.storage.blob.models.BlobStorageException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
+
+@Component
 public class AzureUploader {
 
     private final String connectionString = "your-connection-string";
     private final String containerName = "your-container-name";
 
-    public void uploadToAzure(byte[] data, String blobName) {
-        BlobClientBuilder blobClientBuilder = new BlobClientBuilder()
-                .connectionString(connectionString)
-                .containerName(containerName)
-                .blobName(blobName);
+    @Autowired
+    private DatabaseService databaseService;
 
-        blobClientBuilder.buildClient().upload(new ByteArrayInputStream(data), data.length, true);
+    public void uploadToAzure(byte[] data, String blobName) {
+        try {
+            BlobClientBuilder blobClientBuilder = new BlobClientBuilder()
+                    .connectionString(connectionString)
+                    .containerName(containerName)
+                    .blobName(blobName);
+
+            blobClientBuilder.buildClient().upload(new ByteArrayInputStream(data), data.length, true);
+        } catch (BlobStorageException e) {
+            saveToDatabase(data, blobName);
+        }
+    }
+
+    public void saveToDatabase(byte[] data, String blobName) {
+        // Assuming DatabaseService has a method to save the data and blob name
+        databaseService.saveFailedUpload(data, blobName);
+    }
+
+    public void retryFailedUploads() {
+        // Retrieve all failed uploads from the database
+        List<FailedUpload> failedUploads = databaseService.getFailedUploads();
+
+        for (FailedUpload failedUpload : failedUploads) {
+            try {
+                uploadToAzure(failedUpload.getData(), failedUpload.getBlobName());
+                databaseService.deleteFailedUpload(failedUpload.getId()); // Remove from database upon successful upload
+            } catch (BlobStorageException e) {
+                // Log and continue, will retry next time
+            }
+        }
     }
 }
