@@ -34,3 +34,44 @@ loop retry mechanism
 end
 
 @enduml
+
+___________________________________________
+Enrichment :
+@startuml
+title API Request Workflow in LSEG Platform
+
+actor Client
+participant "RDP (Refinitiv Data Platform)" as RDP
+participant "Enrichment Layer (Spring Boot)" as EnrichmentLayer
+participant "Auth0 Tenant (Tradefeedr)" as Auth0Tenant
+participant "Azure Key Vault" as AzureKeyVault
+participant "Azure ConfigMap" as AzureConfigMap
+participant "External Service (Tradefeedr API)" as ExternalService
+
+Client -> RDP: Initiates API Request
+RDP -> EnrichmentLayer: Forwards API Request (includes UserId in header)
+
+group Authentication
+    EnrichmentLayer -> Auth0Tenant: POST /oauth/token (auth0_clientID, auth0_client_secret)
+    Auth0Tenant --> EnrichmentLayer: Response (access_token, expires_in)
+    EnrichmentLayer -> AzureKeyVault: Store access_token
+    group Token Refresh
+        EnrichmentLayer -> EnrichmentLayer: Check token expiry
+        EnrichmentLayer -> Auth0Tenant: Refresh token 1 minute before expiry
+        Auth0Tenant --> EnrichmentLayer: Response (new access_token, expires_in)
+        EnrichmentLayer -> AzureKeyVault: Update access_token
+    end
+end
+
+group Enrichment
+    EnrichmentLayer -> AzureConfigMap: Get clientid for UserId
+    AzureConfigMap --> EnrichmentLayer: Return clientid
+    EnrichmentLayer -> AzureKeyVault: Retrieve unexpired token
+    AzureKeyVault --> EnrichmentLayer: Return access_token
+    EnrichmentLayer -> EnrichmentLayer: Enrich header with UserId, clientid, access_token
+end
+
+EnrichmentLayer -> ExternalService: Forward enriched request (over internet or private link)
+
+@enduml
+
