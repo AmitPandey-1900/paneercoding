@@ -1,35 +1,39 @@
 @startuml
-actor User
+title Message Processing and Upload Workflow
+
 participant ActiveMQListener
 participant MessageProcessor
 participant XMLParser
 participant ProtobufProcessor
 participant AzureUploader
 participant DatabaseService
-participant AzureBlobStorage
 
-User -> ActiveMQListener : sendMessage()
-ActiveMQListener -> MessageProcessor : listen(message)
-MessageProcessor -> XMLParser : parse(xmlMessage)
-XMLParser -> MessageProcessor : return yourObject
-MessageProcessor -> ProtobufProcessor : processToProtobuf(yourObject)
-ProtobufProcessor -> MessageProcessor : return protobufData
-MessageProcessor -> AzureUploader : uploadToAzure(protobufData, blobName)
+box "Tradefeedr Service" #LightBlue
+    participant AzureBlobStorage
+end box
+
+ActiveMQListener -> MessageProcessor: listen(market Data from CPG.xml)
+MessageProcessor -> XMLParser: parse(xmlMessage)
+XMLParser -> MessageProcessor: return yourObject
+MessageProcessor -> ProtobufProcessor: processToProtobuf(yourObject)
+ProtobufProcessor -> MessageProcessor: return protobufData
+MessageProcessor -> AzureUploader: uploadToAzure(protobufData, blobName)
 
 alt successful upload
-    AzureUploader -> AzureBlobStorage : upload(data, blobName)
+    AzureUploader -> AzureBlobStorage: upload(data, blobName) 
+    note right: mTLS authentication
 end
 
 alt upload fails
-    AzureUploader -> DatabaseService : saveFailedUpload(data, blobName)
+    AzureUploader -> DatabaseService: saveFailedUpload(data, blobName)
 end
 
 loop retry mechanism
-    AzureUploader -> DatabaseService : getFailedUploads()
-    DatabaseService -> AzureUploader : return failedUploads
-    AzureUploader -> AzureBlobStorage : upload(data, blobName)
+    AzureUploader -> DatabaseService: getFailedUploads()
+    DatabaseService -> AzureUploader: return failedUploads
+    AzureUploader -> AzureBlobStorage: upload(data, blobName)
     alt successful retry
-        AzureUploader -> DatabaseService : deleteFailedUpload(id)
+        AzureUploader -> DatabaseService: deleteFailedUpload(id)
     end
 end
 
@@ -37,7 +41,7 @@ end
 
 ___________________________________________
 Enrichment :
-@startuml
+  @startuml
 title API Request Workflow in LSEG Platform
 
 actor Client
@@ -46,10 +50,13 @@ participant "Enrichment Layer (Spring Boot)" as EnrichmentLayer
 participant "Auth0 Tenant (Tradefeedr)" as Auth0Tenant
 participant "Azure Key Vault" as AzureKeyVault
 participant "Azure ConfigMap" as AzureConfigMap
-participant "External Service (Tradefeedr API)" as ExternalService
+
+box "Tradefeedr" #LightBlue
+    participant TradefeedrAPI
+end box
 
 Client -> RDP: Initiates API Request \n (/tradefeedr/v1/algo-parent-order)
-RDP -> EnrichmentLayer: Forwards API Request (includes UserId in header) \n https://app4.dev.rad.refinitiv.com/tradefeedrenrichmentservice/v1/fx/algo/parent-orders
+RDP -> EnrichmentLayer: Forwards API Request (includes UserId in header) \n https://app4.dev.rad.refinitiv.com/xxservice/v1/fx/algo/parent-orders
 
 group Authentication
     EnrichmentLayer -> Auth0Tenant: POST /oauth/token (auth0_clientID, auth0_client_secret)
@@ -71,11 +78,6 @@ group Enrichment
     EnrichmentLayer -> EnrichmentLayer: Enrich header with UserId, clientid, access_token
 end
 
-EnrichmentLayer -> ExternalService: Forward enriched request (over internet or private link) \n to https://api.tradefeedr.com/demo/v1/fx/algo/parent-orders.
+EnrichmentLayer -> TradefeedrAPI: Forward enriched request (over internet or private link) \n to https://api.tradefeedr.com/demo/v1/fx/algo/parent-orders.
 
 @enduml
-
-
-____________________________
-
-
