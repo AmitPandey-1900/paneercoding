@@ -1,0 +1,36 @@
+@startuml
+actor User
+participant ActiveMQListener
+participant MessageProcessor
+participant XMLParser
+participant ProtobufProcessor
+participant AzureUploader
+participant DatabaseService
+participant AzureBlobStorage
+
+User -> ActiveMQListener : sendMessage()
+ActiveMQListener -> MessageProcessor : listen(message)
+MessageProcessor -> XMLParser : parse(xmlMessage)
+XMLParser -> MessageProcessor : return yourObject
+MessageProcessor -> ProtobufProcessor : processToProtobuf(yourObject)
+ProtobufProcessor -> MessageProcessor : return protobufData
+MessageProcessor -> AzureUploader : uploadToAzure(protobufData, blobName)
+
+alt successful upload
+    AzureUploader -> AzureBlobStorage : upload(data, blobName)
+end
+
+alt upload fails
+    AzureUploader -> DatabaseService : saveFailedUpload(data, blobName)
+end
+
+loop retry mechanism
+    AzureUploader -> DatabaseService : getFailedUploads()
+    DatabaseService -> AzureUploader : return failedUploads
+    AzureUploader -> AzureBlobStorage : upload(data, blobName)
+    alt successful retry
+        AzureUploader -> DatabaseService : deleteFailedUpload(id)
+    end
+end
+
+@enduml
