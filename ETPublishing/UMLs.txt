@@ -48,8 +48,8 @@ participant "Azure Key Vault" as AzureKeyVault
 participant "Azure ConfigMap" as AzureConfigMap
 participant "External Service (Tradefeedr API)" as ExternalService
 
-Client -> RDP: Initiates API Request
-RDP -> EnrichmentLayer: Forwards API Request (includes UserId in header)
+Client -> RDP: Initiates API Request \n (/tradefeedr/v1/algo-parent-order)
+RDP -> EnrichmentLayer: Forwards API Request (includes UserId in header) \n https://app4.dev.rad.refinitiv.com/tradefeedrenrichmentservice/v1/fx/algo/parent-orders
 
 group Authentication
     EnrichmentLayer -> Auth0Tenant: POST /oauth/token (auth0_clientID, auth0_client_secret)
@@ -71,7 +71,11 @@ group Enrichment
     EnrichmentLayer -> EnrichmentLayer: Enrich header with UserId, clientid, access_token
 end
 
-EnrichmentLayer -> ExternalService: Forward enriched request (over internet or private link)
+EnrichmentLayer -> ExternalService: Forward enriched request (over internet or private link) \n to https://api.tradefeedr.com/demo/v1/fx/algo/parent-orders.
 
 @enduml
+
+
+____________________________
+
 
