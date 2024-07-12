@@ -1,0 +1,19 @@
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service
+public class DatabaseService {
+
+    public void saveFailedUpload(byte[] data, String blobName) {
+        // Implement logic to save data and blobName to the database
+    }
+
+    public List<FailedUpload> getFailedUploads() {
+        // Implement logic to retrieve failed uploads from the database
+        return new ArrayList<>();
+    }
+
+    public void deleteFailedUpload(int id) {
+        // Implement logic to delete a failed upload record from the database
+    }
+}
