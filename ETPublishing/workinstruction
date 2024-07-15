@@ -1,0 +1,66 @@
+Work Instruction for QA: Running the Java Spring Boot Application
+Overview
+This document outlines the steps for QA to run the standalone Java Spring Boot application that processes XML files from ActiveMQ and uploads them to Azure Explorer.
+
+Prerequisites
+Java 21 installed on your machine.
+Access to the internal repository where the JAR is uploaded.
+ActiveMQ server must be running and accessible.
+Azure credentials for accessing Azure Explorer.
+Step-by-Step Instructions
+Step 1: Download the JAR File
+Access the Internal Repository:
+
+Navigate to the repository location where the JAR is stored.
+Download the JAR:
+
+Locate the JAR file (e.g., your-app-name.jar) and download it to your local machine.
+Step 2: Set Up Environment Variables
+Configure Environment Variables:
+Ensure the following variables are set:
+
+ACTIVEMQ_URL - URL of the ActiveMQ server.
+AZURE_CONNECTION_STRING - Azure connection string.
+Example (Linux/Mac):
+
+bash
+Copy code
+export ACTIVEMQ_URL="tcp://localhost:61616"
+export AZURE_CONNECTION_STRING="<your-azure-connection-string>"
+Example (Windows):
+
+cmd
+Copy code
+set ACTIVEMQ_URL="tcp://localhost:61616"
+set AZURE_CONNECTION_STRING="<your-azure-connection-string>"
+Step 3: Run the Application
+Open Terminal/Command Prompt.
+
+Navigate to the Directory with the JAR:
+
+bash
+Copy code
+cd /path/to/jar
+Execute the JAR:
+
+bash
+Copy code
+java -jar your-app-name.jar
+Step 4: Verification
+Check ActiveMQ:
+
+Ensure the application is connected and processing messages from ActiveMQ.
+Validate Azure Uploads:
+
+Confirm that processed XML files are uploaded to Azure Explorer.
+Review Logs:
+
+Monitor the console output for any errors or processing messages.
+Step 5: Troubleshooting
+Common Issues:
+Application won't start: Check environment variable configurations.
+Connection issues: Verify ActiveMQ and Azure settings.
+Step 6: Document Findings
+Report any issues encountered during testing for further investigation.
+Conclusion
+You can successfully run the Java Spring Boot application using the provided JAR file. For assistance, contact the development team.
